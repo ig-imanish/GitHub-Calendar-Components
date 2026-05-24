@@ -1,0 +1,23 @@
+import type { Metadata } from 'next';
+import './globals.css';
+import Navbar from '@/components/ui/Navbar';
+
+export const metadata: Metadata = {
+  title: 'CalendarUI — GitHub Calendar Builder',
+  description: 'Customize and generate your GitHub contribution graph component. Pick colors, shapes, and copy the code.',
+};
+
+export default function RootLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <html lang="en">
+      <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+      </head>
+      <body suppressHydrationWarning>
+        <Navbar />
+        {children}
+      </body>
+    </html>
+  );
+}
