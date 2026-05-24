@@ -122,7 +122,7 @@ export function generateCode(config: CalendarConfig): string {
          theme={{ dark: ${JSON.stringify(config.themeColors)} }}
          renderBlock={(block, activity) => {
            const { x, y, width, height, fill } = block.props;
-           return <rect x={x} y={y} width={width} height={height} rx={2} ry={2} fill={fill} />;
+           return <rect x={x} y={y} width={width} height={height} fill={fill} />;
          }}
          hideTotalCount={${!config.showTotalCount}}
          hideColorLegend={${!config.showColorLegend}}${monthsTransform(config.months)}${totalLabelProp}
