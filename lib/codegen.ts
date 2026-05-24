@@ -110,23 +110,27 @@ export function generateCode(config: CalendarConfig): string {
     ? `\n        labels={{ totalCount: '${config.totalLabel}' }}`
     : '';
 
-  if (shape === 'square' && !tip) {
-    return `import GitHubCalendar from 'react-github-calendar';
-
-export default function Component() {
-  return (
-    <div style={{ padding: '32px', background: '#0a0a0a', borderRadius: '8px' }}>
-      ${labelBlock(config.labelText)}<GitHubCalendar
-        username="torvalds"
-        colorScheme="dark"
-        theme={{ dark: ${JSON.stringify(config.themeColors)} }}
-        hideTotalCount={${!config.showTotalCount}}
-        hideColorLegend={${!config.showColorLegend}}${monthsTransform(config.months)}${totalLabelProp}
-      />
-    </div>
-  );
-}`;
-  }
+   if (shape === 'square' && !tip) {
+     return `import { GitHubCalendar } from 'react-github-calendar';
+ 
+ export default function GitHubCalendarWidget() {
+   return (
+     <div style={{ padding: '32px', background: '#0a0a0a', borderRadius: '8px' }}>
+       ${labelBlock(config.labelText)}<GitHubCalendar
+         username="torvalds"
+         colorScheme="dark"
+         theme={{ dark: ${JSON.stringify(config.themeColors)} }}
+         renderBlock={(block, activity) => {
+           const { x, y, width, height, fill } = block.props;
+           return <rect x={x} y={y} width={width} height={height} rx={2} ry={2} fill={fill} />;
+         }}
+         hideTotalCount={${!config.showTotalCount}}
+         hideColorLegend={${!config.showColorLegend}}${monthsTransform(config.months)}${totalLabelProp}
+       />
+     </div>
+   );
+ }`;
+   }
 
   const stateImport = tip ? `\nimport { useState } from 'react';` : '';
   const stateHook = tip ? `\n  const [tip, setTip] = useState(null);` : '';
@@ -134,19 +138,19 @@ export default function Component() {
 
   const renderBlock = `\n        renderBlock={(block, activity) => {\n${shapeEl(shape, tip)}\n        }}`;
 
-  return `import GitHubCalendar from 'react-github-calendar';${stateImport}
-${shapeFns[shape] || ''}
-export default function Component() {${stateHook}
-  return (
-    <div style={{ padding: '32px', background: '#0a0a0a', borderRadius: '8px' }}>
-      ${labelBlock(config.labelText)}<GitHubCalendar
-        username="torvalds"
-        colorScheme="dark"
-        theme={{ dark: ${JSON.stringify(config.themeColors)} }}${renderBlock}
-        hideTotalCount={${!config.showTotalCount}}
-        hideColorLegend={${!config.showColorLegend}}${monthsTransform(config.months)}${totalLabelProp}
-      />${tipDiv}
-    </div>
-  );
-}`;
+   return `import { GitHubCalendar } from 'react-github-calendar';${stateImport}
+ ${shapeFns[shape] || ''}
+ export default function GitHubCalendarWidget() {${stateHook}
+   return (
+     <div style={{ padding: '32px', background: '#0a0a0a', borderRadius: '8px' }}>
+       ${labelBlock(config.labelText)}<GitHubCalendar
+         username="torvalds"
+         colorScheme="dark"
+         theme={{ dark: ${JSON.stringify(config.themeColors)} }}${renderBlock}
+         hideTotalCount={${!config.showTotalCount}}
+         hideColorLegend={${!config.showColorLegend}}${monthsTransform(config.months)}${totalLabelProp}
+       />${tipDiv}
+     </div>
+   );
+ }`;
 }

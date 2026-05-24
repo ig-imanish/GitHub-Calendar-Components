@@ -3,7 +3,7 @@ import './globals.css';
 import Navbar from '@/components/ui/Navbar';
 
 export const metadata: Metadata = {
-  title: 'CalendarUI — GitHub Calendar Builder',
+  title: 'GitCalendarUI — GitHub Calendar Builder',
   description: 'Customize and generate your GitHub contribution graph component. Pick colors, shapes, and copy the code.',
 };
 

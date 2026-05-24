@@ -204,18 +204,18 @@ export default function HomePage() {
           marginBottom: '12px',
           lineHeight: 1.05,
         }}>
-          GitHub Calendar
+          Github
           <br />
           <span style={{
-            background: 'linear-gradient(90deg, #a78bfa, #ec4899)',
+            background: 'linear-gradient(90deg, #222, #fff)',
             WebkitBackgroundClip: 'text',
             WebkitTextFillColor: 'transparent',
             backgroundClip: 'text',
           }}>
-            Builder
+            CalendarUI
           </span>
         </h1>
-        <p style={{ color: '#666', fontSize: '15px', maxWidth: '460px', margin: '0 auto', lineHeight: 1.6 }}>
+        <p style={{ color: '#666', fontSize: '15px', maxWidth: '460px', margin: '0 auto', lineHeight: 1.6, width: '100%' }}>
           Customize your contribution graph. Copy the code. Drop it in your portfolio.
         </p>
       </div>
@@ -254,22 +254,22 @@ export default function HomePage() {
                   {config.labelText}
                 </p>
               )}
-              <GitHubCalendar
-                username="torvalds"
-                colorScheme="dark"
-                theme={{ dark: config.themeColors }}
-                renderBlock={config.blockShape !== 'square' || config.showTooltip ? renderBlock : undefined}
-                showTotalCount={config.showTotalCount}
-                labels={config.totalLabel ? { totalCount: config.totalLabel } : undefined}
-                showColorLegend={config.showColorLegend}
-                blockSize={12}
-                blockMargin={4}
-                transformData={config.months > 0 ? (data: any[]) => {
-                  const cutoff = new Date();
-                  cutoff.setMonth(cutoff.getMonth() - config.months);
-                  return data.filter((day: any) => new Date(day.date) >= cutoff);
-                } : undefined}
-              />
+                <GitHubCalendar
+                 username="torvalds"
+                 colorScheme="dark"
+                 theme={{ dark: config.themeColors }}
+                 renderBlock={config.blockShape !== 'square' || config.showTooltip ? renderBlock : undefined}
+                 showTotalCount={config.showTotalCount}
+                 labels={config.totalLabel ? { totalCount: config.totalLabel } : undefined}
+                 showColorLegend={config.showColorLegend}
+                 blockSize={12}
+                 blockMargin={4}
+                 transformData={config.months > 0 ? (data) => {
+                   const cutoff = new Date();
+                   cutoff.setMonth(cutoff.getMonth() - config.months);
+                   return data.filter(day => new Date(day.date) >= cutoff);
+                 } : undefined}
+               />
             </div>
           </div>
 
@@ -545,10 +545,10 @@ export default function HomePage() {
         gap: '16px',
       }}>
         <div className="footer-brand" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <div style={{ width: '22px', height: '22px', background: 'linear-gradient(135deg, #7c3aed, #ec4899)', borderRadius: '5px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ width: '22px', height: '22px', background: 'linear-gradient(135deg, #222)', borderRadius: '5px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4"/><path d="M9 18c-4.51 2-5-2-7-2"/></svg>
           </div>
-          <span style={{ color: '#555', fontSize: '13px' }}>CalendarUI — MIT License</span>
+          <span style={{ color: '#555', fontSize: '13px' }}>GitCalendarUI - MIT License</span>
         </div>
         <div className="footer-links" style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
           <a href="https://www.npmjs.com/package/react-github-calendar" target="_blank" rel="noreferrer" style={{ color: '#555', fontSize: '13px', textDecoration: 'none' }}>npm</a>
