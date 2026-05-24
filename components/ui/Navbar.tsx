@@ -54,7 +54,7 @@ export default function Navbar() {
             fontWeight: 600,
             letterSpacing: '-0.3px',
           }} className="nav-logo">
-            CalendarUI
+            GitCalendarUI
           </span>
         </Link>
 
@@ -99,13 +99,13 @@ export default function Navbar() {
               color: '#999',
               fontSize: '13px',
               fontWeight: 500,
-              padding: '8px 14px',
-              borderRadius: '6px',
+              padding: '8px',
+              borderRadius: '4px',
               background: 'transparent',
               border: '1px solid rgba(255,255,255,0.1)',
               textDecoration: 'none',
               transition: 'all 0.15s',
-              minHeight: 44,
+              minHeight: 34,
               boxSizing: 'border-box',
             }}
             onMouseEnter={e => {
@@ -121,27 +121,28 @@ export default function Navbar() {
             <span>GitHub</span>
           </a>
           <a
-            href="https://www.npmjs.com/package/react-github-calendar"
+            href="https://x.com/intent/follow?screen_name=Manixh02"
             target="_blank"
             rel="noreferrer"
             style={{
               fontSize: '13px',
-              padding: '8px 16px',
+              padding: '8px',
               background: '#fff',
               color: '#000',
               fontWeight: 500,
-              borderRadius: '6px',
+              borderRadius: '4px',
               border: 'none',
               cursor: 'pointer',
               textDecoration: 'none',
               display: 'inline-flex',
               alignItems: 'center',
               gap: '6px',
-              minHeight: 44,
+              minHeight: 34,
               boxSizing: 'border-box',
             }}
           >
-            Install
+            
+            <span>Twitter</span>
           </a>
         </div>
       </div>
