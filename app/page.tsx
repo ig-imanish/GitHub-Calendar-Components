@@ -5,6 +5,7 @@ import dynamic from "next/dynamic";
 import { Copy, Check } from "lucide-react";
 import { presets } from "@/lib/registry";
 import { generateCode, type CalendarConfig } from "@/lib/codegen";
+import { Analytics } from "@vercel/analytics/next";
 
 const GitHubCalendar = dynamic(
   () => import("react-github-calendar").then((m) => m.GitHubCalendar),
@@ -285,7 +286,7 @@ export default function HomePage() {
     marginBottom: "8px",
   };
 
-  const btnStyle = (active: boolean): React.CSSProperties => ({
+   const btnStyle = (active: boolean): React.CSSProperties => ({
     padding: "5px 10px",
     fontSize: "11px",
     borderRadius: "6px",
@@ -294,9 +295,11 @@ export default function HomePage() {
     color: active ? "#a78bfa" : "#777",
     cursor: "pointer",
     textAlign: "center" as const,
-  });
+   });
 
   return (
+
+    
     <main
       style={{
         maxWidth: "1200px",
@@ -831,6 +834,7 @@ export default function HomePage() {
           </a>
         </div>
       </footer>
+       <Analytics />
     </main>
   );
 }
