@@ -7,6 +7,9 @@ export interface CalendarConfig {
   months: number;
   labelText: string;
   totalLabel: string;
+  blockSize: number;
+  borderRadius: number;
+  blockRadius: number;
 }
 
 export function defaultConfig(): CalendarConfig {
@@ -19,6 +22,9 @@ export function defaultConfig(): CalendarConfig {
     months: 0,
     labelText: '',
     totalLabel: '',
+    blockSize: 12,
+    borderRadius: 0,
+    blockRadius: 0,
   };
 }
 
@@ -110,47 +116,52 @@ export function generateCode(config: CalendarConfig): string {
     ? `\n        labels={{ totalCount: '${config.totalLabel}' }}`
     : '';
 
-   if (shape === 'square' && !tip) {
-     return `import { GitHubCalendar } from 'react-github-calendar';
- 
- export default function GitHubCalendarWidget() {
-   return (
-     <div style={{ padding: '32px', background: '#0a0a0a', borderRadius: '8px' }}>
-       ${labelBlock(config.labelText)}<GitHubCalendar
-         username="torvalds"
-         colorScheme="dark"
-         theme={{ dark: ${JSON.stringify(config.themeColors)} }}
-         renderBlock={(block, activity) => {
-           const { x, y, width, height, fill } = block.props;
-           return <rect x={x} y={y} width={width} height={height} fill={fill} />;
-         }}
-         hideTotalCount={${!config.showTotalCount}}
-         hideColorLegend={${!config.showColorLegend}}${monthsTransform(config.months)}${totalLabelProp}
-       />
-     </div>
-   );
- }`;
-   }
+    if (shape === 'square' && !tip) {
+      return `import { GitHubCalendar } from 'react-github-calendar';
+  
+  export default function GitHubCalendarWidget() {
+    return (
+      <div style={{ padding: '32px', background: '#0a0a0a', borderRadius: '8px' }}>
+        ${labelBlock(config.labelText)}<GitHubCalendar
+          username="torvalds"
+          colorScheme="dark"
+          theme={{ dark: ${JSON.stringify(config.themeColors)} }}
+          blockSize={${config.blockSize}}
+          blockMargin={4}
+          renderBlock={(block, activity) => {
+            const { x, y, width, height, fill } = block.props;
+            return <rect x={x} y={y} width={width} height={height} fill={fill} />;
+          }}
+          hideTotalCount={${!config.showTotalCount}}
+          hideColorLegend={${!config.showColorLegend}}${monthsTransform(config.months)}${totalLabelProp}
+        />
+      </div>
+    );
+  }`;
+    }
 
   const stateImport = tip ? `\nimport { useState } from 'react';` : '';
   const stateHook = tip ? `\n  const [tip, setTip] = useState(null);` : '';
   const tipDiv = tip ? `\n      {tip && <div style={{ position: 'fixed', left: tip.x + 'px', top: tip.y + 'px', transform: 'translate(-50%, -100%)', background: '#383838', color: '#fff', padding: '6px 10px', borderRadius: '6px', fontSize: '11px', whiteSpace: 'nowrap', pointerEvents: 'none', zIndex: 1000 }}>{tip.content}</div>}` : '';
 
-  const renderBlock = `\n        renderBlock={(block, activity) => {\n${shapeEl(shape, tip)}\n        }}`;
+   const renderBlock = `\n        renderBlock={(block, activity) => {\n${shapeEl(shape, tip)}\n        }}`;
 
-   return `import { GitHubCalendar } from 'react-github-calendar';${stateImport}
- ${shapeFns[shape] || ''}
- export default function GitHubCalendarWidget() {${stateHook}
-   return (
-     <div style={{ padding: '32px', background: '#0a0a0a', borderRadius: '8px' }}>
-       ${labelBlock(config.labelText)}<GitHubCalendar
-         username="torvalds"
-         colorScheme="dark"
-         theme={{ dark: ${JSON.stringify(config.themeColors)} }}${renderBlock}
-         hideTotalCount={${!config.showTotalCount}}
-         hideColorLegend={${!config.showColorLegend}}${monthsTransform(config.months)}${totalLabelProp}
-       />${tipDiv}
-     </div>
-   );
- }`;
+    return `import { GitHubCalendar } from 'react-github-calendar';${stateImport}
+  ${shapeFns[shape] || ''}
+  export default function GitHubCalendarWidget() {${stateHook}
+    return (
+      <div style={{ padding: '32px', background: '#0a0a0a', borderRadius: '8px' }}>
+        ${labelBlock(config.labelText)}<GitHubCalendar
+          username="torvalds"
+          colorScheme="dark"
+          theme={{ dark: ${JSON.stringify(config.themeColors)} }}
+          blockSize={${config.blockSize}}
+          blockMargin={4}
+          ${renderBlock}
+          hideTotalCount={${!config.showTotalCount}}
+          hideColorLegend={${!config.showColorLegend}}${monthsTransform(config.months)}${totalLabelProp}
+        />${tipDiv}
+      </div>
+    );
+  }`;
 }

@@ -156,16 +156,19 @@ function triPath(cx: number, cy: number, size: number) {
   return `M${cx},${cy - r}L${cx + r},${cy + r}L${cx - r},${cy + r}Z`;
 }
 export default function HomePage() {
-  const [config, setConfig] = useState<CalendarConfig>({
-    themeColors: ["#141414", "#1e3a2f", "#2d6a4f", "#40916c", "#52b788"],
-    blockShape: "square",
-    showTotalCount: true,
-    showColorLegend: true,
-    showTooltip: true,
-    months: 0,
-    labelText: "",
-    totalLabel: "",
-  });
+    const [config, setConfig] = useState<CalendarConfig>({
+      themeColors: ["#141414", "#1e3a2f", "#2d6a4f", "#40916c", "#52b788"],
+      blockShape: "square",
+      showTotalCount: true,
+      showColorLegend: true,
+      showTooltip: true,
+      months: 0,
+      labelText: "",
+      totalLabel: "",
+      blockSize: 12,
+      borderRadius: 0,
+      blockRadius: 0,
+    });
   const [copied, setCopied] = useState(false);
   const [tooltip, setTooltip] = useState<{
     x: number;
@@ -192,81 +195,100 @@ export default function HomePage() {
   };
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const renderBlock = (block: any, activity: any) => {
-    const { x, y, width: w, height: h, fill } = block.props;
-    const cx = x + w / 2,
-      cy = y + h / 2;
-    const shape = config.blockShape;
+   const renderBlock = (block: any, activity: any) => {
+     const { x, y, width: w, height: h, fill } = block.props;
+     const cx = x + w / 2,
+       cy = y + h / 2;
+     const shape = config.blockShape;
 
-    let shaped: React.ReactElement;
-    switch (shape) {
-      case "circle":
-        shaped = <circle cx={cx} cy={cy} r={w / 2} fill={fill} />;
-        break;
-      case "pill":
-        shaped = (
-          <rect x={x} y={y} width={w} height={h} rx={3} ry={3} fill={fill} />
-        );
-        break;
-      case "diamond":
-        shaped = (
-          <rect
-            x={x}
-            y={y}
-            width={w}
-            height={h}
-            fill={fill}
-            transform={`rotate(45 ${cx} ${cy})`}
-          />
-        );
-        break;
-      case "star":
-        shaped = <path d={starPath(cx, cy, w)} fill={fill} />;
-        break;
-      case "hexagon":
-        shaped = <path d={hexPath(cx, cy, w)} fill={fill} />;
-        break;
-      case "triangle":
-        shaped = <path d={triPath(cx, cy, w)} fill={fill} />;
-        break;
-      case "egg":
-        shaped = (
-          <ellipse cx={cx} cy={cy} rx={w * 0.35} ry={w / 2} fill={fill} />
-        );
-        break;
-      case "github":
-        shaped = (
-          <g transform={`translate(${x}, ${y}) scale(${w / 24})`}>
-            <path
-              d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"
-              fill={fill}
-            />
-          </g>
-        );
-        break;
-      default:
-        shaped = block;
-    }
+     let shaped: React.ReactElement;
+     switch (shape) {
+       case "circle":
+         shaped = <circle cx={cx} cy={cy} r={w / 2} fill={fill} />;
+         break;
+       case "pill":
+         {
+           // Calculate radius as percentage of block size (0-50% of width/height)
+           const radiusPercent = Math.min(config.blockRadius || 0, 100) / 100;
+           const radius = Math.min(w, h) * radiusPercent * 0.5; // Max 50% of smallest dimension
+           shaped = (
+             <rect x={x} y={y} width={w} height={h} rx={radius} ry={radius} fill={fill} />
+           );
+         }
+         break;
+       case "diamond":
+         shaped = (
+           <rect
+             x={x}
+             y={y}
+             width={w}
+             height={h}
+             fill={fill}
+             transform={`rotate(45 ${cx} ${cy})`}
+           />
+         );
+         break;
+       case "star":
+         shaped = <path d={starPath(cx, cy, w)} fill={fill} />;
+         break;
+       case "hexagon":
+         shaped = <path d={hexPath(cx, cy, w)} fill={fill} />;
+         break;
+       case "triangle":
+         shaped = <path d={triPath(cx, cy, w)} fill={fill} />;
+         break;
+       case "egg":
+         shaped = (
+           <ellipse cx={cx} cy={cy} rx={w * 0.35} ry={w / 2} fill={fill} />
+         );
+         break;
+       case "github":
+         shaped = (
+           <g transform={`translate(${x}, ${y}) scale(${w / 24})`}>
+             <path
+               d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"
+               fill={fill}
+             />
+           </g>
+         );
+         break;
+       default: {
+         // Calculate radius as percentage of block size (0-50% of width/height)
+         const radiusPercent = Math.min(config.blockRadius || 0, 100) / 100;
+         const radius = Math.min(w, h) * radiusPercent * 0.5; // Max 50% of smallest dimension
+         shaped = (
+           <rect
+             x={x}
+             y={y}
+             width={w}
+             height={h}
+             rx={radius}
+             ry={radius}
+             fill={fill}
+           />
+         );
+       }
+     }
 
-    if (!config.showTooltip) return shaped;
+     if (!config.showTooltip) return shaped;
 
-    return (
-      <g
-        onMouseEnter={(e) => {
-          const r = e.currentTarget.getBoundingClientRect();
-          setTooltip({
-            x: r.left + r.width / 2,
-            y: r.top - 8,
-            content: `${activity.count} contribution${activity.count !== 1 ? "s" : ""} on ${new Date(activity.date).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}`,
-          });
-        }}
-        onMouseLeave={() => setTooltip(null)}
-        style={{ cursor: "pointer" }}
-      >
-        {shaped}
-      </g>
-    );
-  };
+     return (
+       <g
+         onMouseEnter={(e) => {
+           const r = e.currentTarget.getBoundingClientRect();
+           setTooltip({
+             x: r.left + r.width / 2,
+             y: r.top - 8,
+             content: `${activity.count} contribution${activity.count !== 1 ? "s" : ""} on ${new Date(activity.date).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}`,
+           });
+         }}
+         onMouseLeave={() => setTooltip(null)}
+         style={{ cursor: "pointer" }}
+       >
+         {shaped}
+       </g>
+     );
+   };
 
   const inputStyle: React.CSSProperties = {
     width: "100%",
@@ -308,44 +330,43 @@ export default function HomePage() {
       }}
     >
       {/* Header */}
-      <div style={{ textAlign: "center", marginBottom: "48px" }}>
-        <h1
-          style={{
-            fontSize: "clamp(32px, 5vw, 56px)",
-            fontWeight: 700,
-            letterSpacing: "-1.5px",
-            color: "#fff",
-            marginBottom: "12px",
-            lineHeight: 1.05,
-          }}
-        >
-          Github
-          <br />
-          <span
-            style={{
-              background: "linear-gradient(90deg, #222, #fff)",
-              WebkitBackgroundClip: "text",
-              WebkitTextFillColor: "transparent",
-              backgroundClip: "text",
-            }}
-          >
-            CalendarUI
-          </span>
-        </h1>
-        <p
-          style={{
-            color: "#666",
-            fontSize: "15px",
-            maxWidth: "460px",
-            margin: "0 auto",
-            lineHeight: 1.6,
-            width: "100%",
-          }}
-        >
-          Customize your contribution graph. Copy the code. Drop it in your
-          portfolio.
-        </p>
-      </div>
+       <div style={{ textAlign: "center", marginBottom: "48px" }}>
+         <h1
+           style={{
+             fontSize: "clamp(32px, 5vw, 56px)",
+             fontWeight: 700,
+             letterSpacing: "-1.5px",
+             color: "#fff",
+             marginBottom: "12px",
+             lineHeight: 1.05,
+           }}
+         >
+           Build a Custom GitHub Contribution Calendar
+           <br />
+           <span
+             style={{
+               background: "linear-gradient(90deg, #222, #fff)",
+               WebkitBackgroundClip: "text",
+               WebkitTextFillColor: "transparent",
+               backgroundClip: "text",
+             }}
+           >
+             for Your Portfolio
+           </span>
+         </h1>
+         <p
+           style={{
+             color: "#666",
+             fontSize: "15px",
+             maxWidth: "460px",
+             margin: "0 auto",
+             lineHeight: 1.6,
+             width: "100%",
+           }}
+         >
+           Tailor your GitHub streak with beautiful themes, copy React code instantly, and showcase your activity on any portfolio site.
+         </p>
+       </div>
 
       {/* Main grid */}
       <div
@@ -571,28 +592,59 @@ export default function HomePage() {
             </div>
           </div>
 
-          {/* Shape */}
-          <div
-            style={{
-              background: "#111",
-              border: "1px solid rgba(255,255,255,0.07)",
-              borderRadius: "8px",
-              padding: "20px",
-            }}
-          >
-            <p style={labelStyle}>Block shape</p>
-            <div style={{ display: "flex", flexWrap: "wrap", gap: "4px" }}>
-              {SHAPES.map((s) => (
-                <button
-                  key={s}
-                  onClick={() => setConfig({ ...config, blockShape: s })}
-                  style={btnStyle(config.blockShape === s)}
-                >
-                  {s}
-                </button>
-              ))}
+            {/* Block radius */}
+            <div
+              style={{
+                background: "#111",
+                border: "1px solid rgba(255,255,255,0.07)",
+                borderRadius: "8px",
+                padding: "20px",
+              }}
+            >
+              <p style={labelStyle}>Block radius</p>
+              <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                  <span style={{ fontSize: "12px", color: "#888" }}>None</span>
+                  <span style={{ fontSize: "12px", color: "#888" }}>Maximum</span>
+                </div>
+                <input
+                  type="range"
+                  min={0}
+                  max={100}
+                  step={1}
+                  value={config.blockRadius || 0}
+                  onChange={(e) =>
+                    setConfig({ ...config, blockRadius: Number(e.target.value) })}
+                  style={{ width: "100%" }}
+                />
+                <div style={{ textAlign: "right", fontSize: "12px", color: "#888" }}>
+                  {(config.blockRadius || 0)}%
+                </div>
+              </div>
             </div>
-          </div>
+
+           {/* Shape */}
+           <div
+             style={{
+               background: "#111",
+               border: "1px solid rgba(255,255,255,0.07)",
+               borderRadius: "8px",
+               padding: "20px",
+             }}
+           >
+             <p style={labelStyle}>Block shape</p>
+             <div style={{ display: "flex", flexWrap: "wrap", gap: "4px" }}>
+               {SHAPES.map((s) => (
+                 <button
+                   key={s}
+                   onClick={() => setConfig({ ...config, blockShape: s })}
+                   style={btnStyle(config.blockShape === s)}
+                 >
+                   {s}
+                 </button>
+               ))}
+             </div>
+           </div>
 
           {/* Months */}
           <div
@@ -657,36 +709,38 @@ export default function HomePage() {
             />
           </div>
 
-          {/* Colors */}
-          <div
-            style={{
-              background: "#111",
-              border: "1px solid rgba(255,255,255,0.07)",
-              borderRadius: "8px",
-              padding: "20px",
-            }}
-          >
-            <p style={labelStyle}>Theme colors</p>
-            <div style={{ display: "flex", gap: "6px" }}>
-              {config.themeColors.map((c, i) => (
-                <input
-                  key={i}
-                  type="color"
-                  value={c}
-                  onChange={(e) => updateColor(i, e.target.value)}
-                  style={{
-                    width: "32px",
-                    height: "32px",
-                    borderRadius: "6px",
-                    border: "1px solid rgba(255,255,255,0.1)",
-                    cursor: "pointer",
-                    padding: 0,
-                    background: "none",
-                  }}
-                />
-              ))}
-            </div>
-          </div>
+           {/* Colors */}
+           <div
+             style={{
+               background: "#111",
+               border: "1px solid rgba(255,255,255,0.07)",
+               borderRadius: "8px",
+               padding: "20px",
+             }}
+           >
+             <p style={labelStyle}>Theme colors</p>
+             <div style={{ display: "flex", gap: "6px" }}>
+               {config.themeColors.map((c, i) => (
+                 <input
+                   key={i}
+                   type="color"
+                   value={c}
+                   onChange={(e) => updateColor(i, e.target.value)}
+                   style={{
+                     width: "32px",
+                     height: "32px",
+                     borderRadius: "6px",
+                     border: "1px solid rgba(255,255,255,0.1)",
+                     cursor: "pointer",
+                     padding: 0,
+                     background: "none",
+                   }}
+                 />
+               ))}
+             </div>
+           </div>
+
+
 
           {/* Toggles */}
           <div
