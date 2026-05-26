@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from "react";
 import dynamic from "next/dynamic";
-import { Copy, Check } from "lucide-react";
+import { Copy, Check, Sparkles } from "lucide-react";
 import { presets } from "@/lib/registry";
 import { generateCode, type CalendarConfig } from "@/lib/codegen";
 import { Analytics } from "@vercel/analytics/next";
@@ -156,20 +156,21 @@ function triPath(cx: number, cy: number, size: number) {
   return `M${cx},${cy - r}L${cx + r},${cy + r}L${cx - r},${cy + r}Z`;
 }
 export default function HomePage() {
-    const [config, setConfig] = useState<CalendarConfig>({
-      themeColors: ["#141414", "#1e3a2f", "#2d6a4f", "#40916c", "#52b788"],
-      blockShape: "square",
-      showTotalCount: true,
-      showColorLegend: true,
-      showTooltip: true,
-      months: 0,
-      labelText: "",
-      totalLabel: "",
-      blockSize: 12,
-      borderRadius: 0,
-      blockRadius: 0,
-    });
+  const [config, setConfig] = useState<CalendarConfig>({
+    themeColors: ["#141414", "#1e3a2f", "#2d6a4f", "#40916c", "#52b788"],
+    blockShape: "square",
+    showTotalCount: true,
+    showColorLegend: true,
+    showTooltip: true,
+    months: 0,
+    labelText: "",
+    totalLabel: "",
+    blockSize: 12,
+    borderRadius: 0,
+    blockRadius: 0,
+  });
   const [copied, setCopied] = useState(false);
+  const [showFullCode, setShowFullCode] = useState(false);
   const [tooltip, setTooltip] = useState<{
     x: number;
     y: number;
@@ -177,6 +178,9 @@ export default function HomePage() {
   } | null>(null);
 
   const code = useMemo(() => generateCode(config), [config]);
+  const codeLines = code.split("\n");
+  const truncatedCode = codeLines.slice(0, 4).join("\n");
+  const fadeLine = !showFullCode && codeLines.length > 4 ? codeLines[4] : null;
 
   const copyCode = async () => {
     try {
@@ -195,100 +199,108 @@ export default function HomePage() {
   };
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-   const renderBlock = (block: any, activity: any) => {
-     const { x, y, width: w, height: h, fill } = block.props;
-     const cx = x + w / 2,
-       cy = y + h / 2;
-     const shape = config.blockShape;
+  const renderBlock = (block: any, activity: any) => {
+    const { x, y, width: w, height: h, fill } = block.props;
+    const cx = x + w / 2,
+      cy = y + h / 2;
+    const shape = config.blockShape;
 
-     let shaped: React.ReactElement;
-     switch (shape) {
-       case "circle":
-         shaped = <circle cx={cx} cy={cy} r={w / 2} fill={fill} />;
-         break;
-       case "pill":
-         {
-           // Calculate radius as percentage of block size (0-50% of width/height)
-           const radiusPercent = Math.min(config.blockRadius || 0, 100) / 100;
-           const radius = Math.min(w, h) * radiusPercent * 0.5; // Max 50% of smallest dimension
-           shaped = (
-             <rect x={x} y={y} width={w} height={h} rx={radius} ry={radius} fill={fill} />
-           );
-         }
-         break;
-       case "diamond":
-         shaped = (
-           <rect
-             x={x}
-             y={y}
-             width={w}
-             height={h}
-             fill={fill}
-             transform={`rotate(45 ${cx} ${cy})`}
-           />
-         );
-         break;
-       case "star":
-         shaped = <path d={starPath(cx, cy, w)} fill={fill} />;
-         break;
-       case "hexagon":
-         shaped = <path d={hexPath(cx, cy, w)} fill={fill} />;
-         break;
-       case "triangle":
-         shaped = <path d={triPath(cx, cy, w)} fill={fill} />;
-         break;
-       case "egg":
-         shaped = (
-           <ellipse cx={cx} cy={cy} rx={w * 0.35} ry={w / 2} fill={fill} />
-         );
-         break;
-       case "github":
-         shaped = (
-           <g transform={`translate(${x}, ${y}) scale(${w / 24})`}>
-             <path
-               d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"
-               fill={fill}
-             />
-           </g>
-         );
-         break;
-       default: {
-         // Calculate radius as percentage of block size (0-50% of width/height)
-         const radiusPercent = Math.min(config.blockRadius || 0, 100) / 100;
-         const radius = Math.min(w, h) * radiusPercent * 0.5; // Max 50% of smallest dimension
-         shaped = (
-           <rect
-             x={x}
-             y={y}
-             width={w}
-             height={h}
-             rx={radius}
-             ry={radius}
-             fill={fill}
-           />
-         );
-       }
-     }
+    let shaped: React.ReactElement;
+    switch (shape) {
+      case "circle":
+        shaped = <circle cx={cx} cy={cy} r={w / 2} fill={fill} />;
+        break;
+      case "pill":
+        {
+          // Calculate radius as percentage of block size (0-50% of width/height)
+          const radiusPercent = Math.min(config.blockRadius || 0, 100) / 100;
+          const radius = Math.min(w, h) * radiusPercent * 0.5; // Max 50% of smallest dimension
+          shaped = (
+            <rect
+              x={x}
+              y={y}
+              width={w}
+              height={h}
+              rx={radius}
+              ry={radius}
+              fill={fill}
+            />
+          );
+        }
+        break;
+      case "diamond":
+        shaped = (
+          <rect
+            x={x}
+            y={y}
+            width={w}
+            height={h}
+            fill={fill}
+            transform={`rotate(45 ${cx} ${cy})`}
+          />
+        );
+        break;
+      case "star":
+        shaped = <path d={starPath(cx, cy, w)} fill={fill} />;
+        break;
+      case "hexagon":
+        shaped = <path d={hexPath(cx, cy, w)} fill={fill} />;
+        break;
+      case "triangle":
+        shaped = <path d={triPath(cx, cy, w)} fill={fill} />;
+        break;
+      case "egg":
+        shaped = (
+          <ellipse cx={cx} cy={cy} rx={w * 0.35} ry={w / 2} fill={fill} />
+        );
+        break;
+      case "github":
+        shaped = (
+          <g transform={`translate(${x}, ${y}) scale(${w / 24})`}>
+            <path
+              d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"
+              fill={fill}
+            />
+          </g>
+        );
+        break;
+      default: {
+        // Calculate radius as percentage of block size (0-50% of width/height)
+        const radiusPercent = Math.min(config.blockRadius || 0, 100) / 100;
+        const radius = Math.min(w, h) * radiusPercent * 0.5; // Max 50% of smallest dimension
+        shaped = (
+          <rect
+            x={x}
+            y={y}
+            width={w}
+            height={h}
+            rx={radius}
+            ry={radius}
+            fill={fill}
+          />
+        );
+      }
+    }
 
-     if (!config.showTooltip) return shaped;
+    if (!config.showTooltip) return shaped;
 
-     return (
-       <g
-         onMouseEnter={(e) => {
-           const r = e.currentTarget.getBoundingClientRect();
-           setTooltip({
-             x: r.left + r.width / 2,
-             y: r.top - 8,
-             content: `${activity.count} contribution${activity.count !== 1 ? "s" : ""} on ${new Date(activity.date).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}`,
-           });
-         }}
-         onMouseLeave={() => setTooltip(null)}
-         style={{ cursor: "pointer" }}
-       >
-         {shaped}
-       </g>
-     );
-   };
+    return (
+      <g
+        onMouseEnter={(e) => {
+          const r = e.currentTarget.getBoundingClientRect();
+          setTooltip({
+            x: r.left + r.width / 2,
+            y: r.top - 8,
+            content: `${activity.count} contribution${activity.count !== 1 ? "s" : ""} on ${new Date(activity.date).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}`,
+          });
+        }}
+        onMouseLeave={() => setTooltip(null)}
+        style={{ cursor: "pointer" }}
+      >
+        {shaped}
+      </g>
+    );
+  };
 
   const inputStyle: React.CSSProperties = {
     width: "100%",
@@ -308,7 +320,7 @@ export default function HomePage() {
     marginBottom: "8px",
   };
 
-   const btnStyle = (active: boolean): React.CSSProperties => ({
+  const btnStyle = (active: boolean): React.CSSProperties => ({
     padding: "5px 10px",
     fontSize: "11px",
     borderRadius: "6px",
@@ -317,11 +329,9 @@ export default function HomePage() {
     color: active ? "#a78bfa" : "#777",
     cursor: "pointer",
     textAlign: "center" as const,
-   });
+  });
 
   return (
-
-    
     <main
       style={{
         maxWidth: "1200px",
@@ -330,45 +340,66 @@ export default function HomePage() {
       }}
     >
       {/* Header */}
-       <div style={{ textAlign: "center", marginBottom: "48px" }}>
-         <h1
-           style={{
-             fontSize: "clamp(32px, 5vw, 56px)",
-             fontWeight: 700,
-             letterSpacing: "-1.5px",
-             color: "#fff",
-             marginBottom: "12px",
-             lineHeight: 1.05,
-           }}
-         >
-           Build a Custom GitHub Contribution Calendar
-           <br />
-           <span
-             style={{
-               background: "linear-gradient(90deg, #222, #fff)",
-               WebkitBackgroundClip: "text",
-               WebkitTextFillColor: "transparent",
-               backgroundClip: "text",
-             }}
-           >
-             for Your Portfolio
-           </span>
-         </h1>
-         <p
-           style={{
-             color: "#666",
-             fontSize: "15px",
-             maxWidth: "460px",
-             margin: "0 auto",
-             lineHeight: 1.6,
-             width: "100%",
-           }}
-         >
-           Tailor your GitHub streak with beautiful themes, copy React code instantly, and showcase your activity on any portfolio site.
-         </p>
-       </div>
+      <div style={{ textAlign: "center", marginBottom: "48px" }}>
+        <h1
+          style={{
+            fontSize: "clamp(32px, 5vw, 56px)",
+            fontWeight: 700,
+            letterSpacing: "-1.5px",
+            color: "#fff",
+            marginBottom: "12px",
+            lineHeight: 1.05,
+          }}
+        >
+          <span
+            style={{
+              background: "linear-gradient(90deg, #222, #fff)",
+              WebkitBackgroundClip: "text",
+              WebkitTextFillColor: "transparent",
+              backgroundClip: "text",
+            }}
+          >
+            GitHub
+          </span>
+          Contribution
+          <br />
+          <span
+            style={{
+              background: "linear-gradient(90deg, #222, #fff)",
+              WebkitBackgroundClip: "text",
+              WebkitTextFillColor: "transparent",
+              backgroundClip: "text",
+            }}
+          >
+            Calendar
+          </span>
+          for Your <br />
+          <span
+            style={{
+              background: "linear-gradient(90deg, #222, #fff)",
+              WebkitBackgroundClip: "text",
+              WebkitTextFillColor: "transparent",
+              backgroundClip: "text",
+            }}
+          >
+            Portfolio
+          </span>
+        </h1>
+        <p
+          style={{
+            color: "#666",
+            fontSize: "15px",
+            maxWidth: "460px",
+            margin: "0 auto",
+            lineHeight: 1.6,
+            width: "100%",
+          }}
+        >
+          Tailor your GitHub streak with beautiful themes, copy React code
+          instantly, and showcase your activity on any portfolio site.
+        </p>
+      </div>
 
-      {/* Main grid */}
       <div
         style={{
           display: "grid",
@@ -377,224 +408,98 @@ export default function HomePage() {
           alignItems: "start",
         }}
       >
-        {/* Preview + Code */}
-        <div style={{ minWidth: 0 }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: "16px", minWidth: 0 }}>
           {/* Preview */}
-          <div
-            style={{
-              background: "var(--canvas)",
-              border: "1px solid rgba(255,255,255,0.07)",
-              borderRadius: "8px",
-              padding: "48px 32px",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              minHeight: "320px",
-              overflow: "hidden",
-            }}
-          >
-            <div style={{ width: "100%", overflowX: "auto" }}>
-              {config.labelText && (
-                <p
-                  style={{
-                    color: "rgba(255,255,255,0.7)",
-                    fontSize: "12px",
-                    fontWeight: 600,
-                    letterSpacing: "0.08em",
-                    textTransform: "uppercase",
-                    marginBottom: "16px",
-                  }}
-                >
-                  {config.labelText}
-                </p>
-              )}
-              <GitHubCalendar
-                username="torvalds"
-                colorScheme="dark"
-                theme={{ dark: config.themeColors }}
-                renderBlock={
-                  config.blockShape !== "square" || config.showTooltip
-                    ? renderBlock
-                    : undefined
-                }
-                showTotalCount={config.showTotalCount}
-                labels={
-                  config.totalLabel
-                    ? { totalCount: config.totalLabel }
-                    : undefined
-                }
-                showColorLegend={config.showColorLegend}
-                blockSize={12}
-                blockMargin={4}
-                transformData={
-                  config.months > 0
-                    ? (data) => {
-                        const cutoff = new Date();
-                        cutoff.setMonth(cutoff.getMonth() - config.months);
-                        return data.filter(
-                          (day) => new Date(day.date) >= cutoff,
-                        );
-                      }
-                    : undefined
-                }
-              />
-            </div>
-          </div>
-
-          {/* Tooltip */}
-          {tooltip && (
+          <div style={{ minWidth: 0 }}>
             <div
               style={{
-                position: "fixed",
-                left: `${tooltip.x}px`,
-                top: `${tooltip.y}px`,
-                transform: "translate(-50%, -100%)",
-                background: "#383838",
-                color: "#fff",
-                padding: "6px 10px",
-                borderRadius: "6px",
-                fontSize: "11px",
-                whiteSpace: "nowrap",
-                pointerEvents: "none",
-                zIndex: 1000,
-                boxShadow: "0 2px 8px rgba(0,0,0,0.3)",
-              }}
-            >
-              {tooltip.content}
-            </div>
-          )}
-
-          {/* Code snippet */}
-          <div style={{ marginTop: "24px", overflow: "hidden" }}>
-            <div
-              style={{
+                background: "var(--canvas)",
+                border: "1px solid rgba(255,255,255,0.07)",
+                borderRadius: "8px",
+                padding: "48px 32px",
                 display: "flex",
                 alignItems: "center",
-                gap: "8px",
-                padding: "10px 16px",
-                background: "#111",
-                border: "1px solid rgba(255,255,255,0.07)",
-                borderBottom: "none",
-                borderRadius: "8px 8px 0 0",
+                justifyContent: "center",
+                minHeight: "320px",
+                overflow: "hidden",
               }}
             >
-              <span
-                style={{ color: "#666", fontSize: "12px", fontWeight: 600 }}
-              >
-                Code
-              </span>
-              <button
-                onClick={copyCode}
+              <div style={{ width: "100%", overflowX: "auto" }}>
+                {config.labelText && (
+                  <p
+                    style={{
+                      color: "rgba(255,255,255,0.7)",
+                      fontSize: "12px",
+                      fontWeight: 600,
+                      letterSpacing: "0.08em",
+                      textTransform: "uppercase",
+                      marginBottom: "16px",
+                    }}
+                  >
+                    {config.labelText}
+                  </p>
+                )}
+                <GitHubCalendar
+                  username="torvalds"
+                  colorScheme="dark"
+                  theme={{ dark: config.themeColors.slice(0, 5) }}
+                  renderBlock={
+                    config.blockShape !== "square" || config.showTooltip
+                      ? renderBlock
+                      : undefined
+                  }
+                  showTotalCount={config.showTotalCount}
+                  labels={
+                    config.totalLabel
+                      ? { totalCount: config.totalLabel }
+                      : undefined
+                  }
+                  showColorLegend={config.showColorLegend}
+                  blockSize={12}
+                  blockMargin={4}
+                  transformData={
+                    config.months > 0
+                      ? (data) => {
+                          const cutoff = new Date();
+                          cutoff.setMonth(cutoff.getMonth() - config.months);
+                          return data.filter(
+                            (day) => new Date(day.date) >= cutoff,
+                          );
+                        }
+                      : undefined
+                  }
+                />
+              </div>
+            </div>
+
+            {/* Tooltip */}
+            {tooltip && (
+              <div
                 style={{
-                  marginLeft: "auto",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "5px",
-                  background: "transparent",
-                  border: "none",
-                  color: "#888",
-                  fontSize: "12px",
-                  cursor: "pointer",
-                  padding: "4px 8px",
+                  position: "fixed",
+                  left: `${tooltip.x}px`,
+                  top: `${tooltip.y}px`,
+                  transform: "translate(-50%, -100%)",
+                  background: "#383838",
+                  color: "#fff",
+                  padding: "6px 10px",
+                  borderRadius: "6px",
+                  fontSize: "11px",
+                  whiteSpace: "nowrap",
+                  pointerEvents: "none",
+                  zIndex: 1000,
+                  boxShadow: "0 2px 8px rgba(0,0,0,0.3)",
                 }}
               >
-                {copied ? <Check size={13} /> : <Copy size={13} />}
-                {copied ? "Copied!" : "Copy code"}
-              </button>
-            </div>
-            <pre
-              style={{
-                padding: "16px",
-                margin: 0,
-                background: "#111",
-                border: "1px solid rgba(255,255,255,0.07)",
-                borderRadius: "0 0 8px 8px",
-                overflowX: "auto",
-                fontSize: "13px",
-                lineHeight: 1.7,
-                whiteSpace: "pre",
-                fontFamily: "'SF Mono', 'Fira Code', 'Consolas', monospace",
-                maxWidth: "100%",
-                boxSizing: "border-box",
-              }}
-            >
-              <code dangerouslySetInnerHTML={{ __html: highlightCode(code) }} />
-            </pre>
-          </div>
-        </div>
-
-        {/* Controls sidebar */}
-        <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
-          {/* Presets */}
-          <div
-            style={{
-              background: "#111",
-              border: "1px solid rgba(255,255,255,0.07)",
-              borderRadius: "8px",
-              padding: "20px",
-            }}
-          >
-            <p
-              style={{
-                color: "#555",
-                fontSize: "11px",
-                fontWeight: 600,
-                letterSpacing: "0.08em",
-                textTransform: "uppercase",
-                marginBottom: "12px",
-              }}
-            >
-              Themes
-            </p>
-            <div
-              style={{ display: "flex", flexDirection: "column", gap: "6px" }}
-            >
-              {presets.map((p) => (
-                <button
-                  key={p.name}
-                  onClick={() =>
-                    setConfig({ ...config, themeColors: [...p.colors] })
-                  }
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "10px",
-                    padding: "8px 12px",
-                    borderRadius: "6px",
-                    border: `1px solid ${config.themeColors.join() === p.colors.join() ? "rgba(168,85,247,0.4)" : "rgba(255,255,255,0.06)"}`,
-                    background:
-                      config.themeColors.join() === p.colors.join()
-                        ? "rgba(168,85,247,0.1)"
-                        : "transparent",
-                    cursor: "pointer",
-                    width: "100%",
-                    textAlign: "left",
-                  }}
-                >
-                  <div style={{ display: "flex", gap: "3px" }}>
-                    {p.colors.map((c, i) => (
-                      <div
-                        key={i}
-                        style={{
-                          width: "14px",
-                          height: "14px",
-                          background: c,
-                          borderRadius: "3px",
-                        }}
-                      />
-                    ))}
-                  </div>
-                  <span style={{ color: "#ccc", fontSize: "12px" }}>
-                    {p.name}
-                  </span>
-                </button>
-              ))}
-            </div>
+                {tooltip.content}
+              </div>
+            )}
           </div>
 
-            {/* Block radius */}
+          <div className="controls-row" style={{ display: "flex", gap: "16px" }}>
             <div
               style={{
+                flex: 1,
                 background: "#111",
                 border: "1px solid rgba(255,255,255,0.07)",
                 borderRadius: "8px",
@@ -602,10 +507,20 @@ export default function HomePage() {
               }}
             >
               <p style={labelStyle}>Block radius</p>
-              <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <div
+                style={{ display: "flex", flexDirection: "column", gap: "8px" }}
+              >
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                  }}
+                >
                   <span style={{ fontSize: "12px", color: "#888" }}>None</span>
-                  <span style={{ fontSize: "12px", color: "#888" }}>Maximum</span>
+                  <span style={{ fontSize: "12px", color: "#888" }}>
+                    Maximum
+                  </span>
                 </div>
                 <input
                   type="range"
@@ -614,39 +529,50 @@ export default function HomePage() {
                   step={1}
                   value={config.blockRadius || 0}
                   onChange={(e) =>
-                    setConfig({ ...config, blockRadius: Number(e.target.value) })}
+                    setConfig({
+                      ...config,
+                      blockShape: "square",
+                      blockRadius: Number(e.target.value),
+                    })
+                  }
                   style={{ width: "100%" }}
                 />
-                <div style={{ textAlign: "right", fontSize: "12px", color: "#888" }}>
-                  {(config.blockRadius || 0)}%
+                <div
+                  style={{
+                    textAlign: "right",
+                    fontSize: "12px",
+                    color: "#888",
+                  }}
+                >
+                  {config.blockRadius || 0}%
                 </div>
               </div>
             </div>
+            <div
+              style={{
+                flex: 1,
+                background: "#111",
+                border: "1px solid rgba(255,255,255,0.07)",
+                borderRadius: "8px",
+                padding: "20px",
+              }}
+            >
+              <p style={labelStyle}>Show range</p>
+              <div style={{ display: "flex", gap: "4px" }}>
+                {MONTHS.map((o) => (
+                  <button
+                    key={o.value}
+                    onClick={() => setConfig({ ...config, months: o.value })}
+                    style={{ ...btnStyle(config.months === o.value), flex: 1 }}
+                  >
+                    {o.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
 
-           {/* Shape */}
-           <div
-             style={{
-               background: "#111",
-               border: "1px solid rgba(255,255,255,0.07)",
-               borderRadius: "8px",
-               padding: "20px",
-             }}
-           >
-             <p style={labelStyle}>Block shape</p>
-             <div style={{ display: "flex", flexWrap: "wrap", gap: "4px" }}>
-               {SHAPES.map((s) => (
-                 <button
-                   key={s}
-                   onClick={() => setConfig({ ...config, blockShape: s })}
-                   style={btnStyle(config.blockShape === s)}
-                 >
-                   {s}
-                 </button>
-               ))}
-             </div>
-           </div>
-
-          {/* Months */}
+          {/* Shape */}
           <div
             style={{
               background: "#111",
@@ -655,15 +581,15 @@ export default function HomePage() {
               padding: "20px",
             }}
           >
-            <p style={labelStyle}>Show range</p>
-            <div style={{ display: "flex", gap: "4px" }}>
-              {MONTHS.map((o) => (
+            <p style={labelStyle}>Block shape</p>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: "4px" }}>
+              {SHAPES.map((s) => (
                 <button
-                  key={o.value}
-                  onClick={() => setConfig({ ...config, months: o.value })}
-                  style={{ ...btnStyle(config.months === o.value), flex: 1 }}
+                  key={s}
+                  onClick={() => setConfig({ ...config, blockShape: s })}
+                  style={btnStyle(config.blockShape === s)}
                 >
-                  {o.label}
+                  {s}
                 </button>
               ))}
             </div>
@@ -709,40 +635,123 @@ export default function HomePage() {
             />
           </div>
 
-           {/* Colors */}
-           <div
-             style={{
-               background: "#111",
-               border: "1px solid rgba(255,255,255,0.07)",
-               borderRadius: "8px",
-               padding: "20px",
-             }}
-           >
-             <p style={labelStyle}>Theme colors</p>
-             <div style={{ display: "flex", gap: "6px" }}>
-               {config.themeColors.map((c, i) => (
-                 <input
-                   key={i}
-                   type="color"
-                   value={c}
-                   onChange={(e) => updateColor(i, e.target.value)}
-                   style={{
-                     width: "32px",
-                     height: "32px",
-                     borderRadius: "6px",
-                     border: "1px solid rgba(255,255,255,0.1)",
-                     cursor: "pointer",
-                     padding: 0,
-                     background: "none",
-                   }}
-                 />
-               ))}
-             </div>
-           </div>
+          <div className="controls-row" style={{ display: "flex", gap: "16px" }}>
+            <div
+              style={{
+                flex: 1,
+                background: "#111",
+                border: "1px solid rgba(255,255,255,0.07)",
+                borderRadius: "8px",
+                padding: "20px",
+              }}
+            >
+              <p style={labelStyle}>Theme colors</p>
+              <div style={{ display: "flex", gap: "6px" }}>
+                {config.themeColors.map((c, i) => (
+                  <input
+                    key={i}
+                    type="color"
+                    value={c}
+                    onChange={(e) => updateColor(i, e.target.value)}
+                    style={{
+                      width: "32px",
+                      height: "32px",
+                      borderRadius: "6px",
+                      border: "1px solid rgba(255,255,255,0.1)",
+                      cursor: "pointer",
+                      padding: 0,
+                      background: "none",
+                    }}
+                  />
+                ))}
+              </div>
+            </div>
+            <div
+              style={{
+                flex: 1,
+                background: "#111",
+                border: "1px solid rgba(255,255,255,0.07)",
+                borderRadius: "8px",
+                padding: "20px",
+              }}
+            >
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: "10px",
+                }}
+              >
+                <label
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "8px",
+                    color: "#999",
+                    fontSize: "13px",
+                    cursor: "pointer",
+                  }}
+                >
+                  <input
+                    type="checkbox"
+                    checked={config.showTotalCount}
+                    onChange={(e) =>
+                      setConfig({ ...config, showTotalCount: e.target.checked })
+                    }
+                    style={{ accentColor: "#7c3aed" }}
+                  />
+                  Show total count
+                </label>
+                <label
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "8px",
+                    color: "#999",
+                    fontSize: "13px",
+                    cursor: "pointer",
+                  }}
+                >
+                  <input
+                    type="checkbox"
+                    checked={config.showColorLegend}
+                    onChange={(e) =>
+                      setConfig({
+                        ...config,
+                        showColorLegend: e.target.checked,
+                      })
+                    }
+                    style={{ accentColor: "#7c3aed" }}
+                  />
+                  Show color legend
+                </label>
+                <label
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "8px",
+                    color: "#999",
+                    fontSize: "13px",
+                    cursor: "pointer",
+                  }}
+                >
+                  <input
+                    type="checkbox"
+                    checked={config.showTooltip}
+                    onChange={(e) =>
+                      setConfig({ ...config, showTooltip: e.target.checked })
+                    }
+                    style={{ accentColor: "#7c3aed" }}
+                  />
+                  Show hover tooltip
+                </label>
+              </div>
+          </div>
+        </div>
+      </div>
 
-
-
-          {/* Toggles */}
+        {/* Themes */}
+        <div style={{ display: "flex", flexDirection: "column", gap: "16px", minWidth: 0 }}>
           <div
             style={{
               background: "#111",
@@ -751,77 +760,231 @@ export default function HomePage() {
               padding: "20px",
             }}
           >
-            <div
-              style={{ display: "flex", flexDirection: "column", gap: "10px" }}
+            <p
+              style={{
+                color: "#555",
+                fontSize: "11px",
+                fontWeight: 600,
+                letterSpacing: "0.08em",
+                textTransform: "uppercase",
+                marginBottom: "12px",
+              }}
             >
-              <label
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "8px",
-                  color: "#999",
-                  fontSize: "13px",
-                  cursor: "pointer",
-                }}
-              >
-                <input
-                  type="checkbox"
-                  checked={config.showTotalCount}
-                  onChange={(e) =>
-                    setConfig({ ...config, showTotalCount: e.target.checked })
+              Themes
+            </p>
+            <button
+              onClick={() => {
+                const r = Math.floor(Math.random() * presets.length);
+                setConfig({ ...config, themeColors: [...presets[r].colors] });
+              }}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: "6px",
+                marginBottom: "10px",
+                padding: "8px 12px",
+                borderRadius: "6px",
+                border: "1px solid rgba(168,85,247,0.3)",
+                background: "rgba(168,85,247,0.08)",
+                color: "#a78bfa",
+                cursor: "pointer",
+                width: "100%",
+                fontSize: "12px",
+                fontWeight: 500,
+              }}
+            >
+              <Sparkles size={14} />
+              Surprise me
+            </button>
+            <div
+              style={{ display: "flex", flexDirection: "column", gap: "6px" }}
+            >
+              {presets.map((p) => (
+                <button
+                  key={p.name}
+                  onClick={() =>
+                    setConfig({ ...config, themeColors: [...p.colors] })
                   }
-                  style={{ accentColor: "#7c3aed" }}
-                />
-                Show total count
-              </label>
-              <label
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "8px",
-                  color: "#999",
-                  fontSize: "13px",
-                  cursor: "pointer",
-                }}
-              >
-                <input
-                  type="checkbox"
-                  checked={config.showColorLegend}
-                  onChange={(e) =>
-                    setConfig({ ...config, showColorLegend: e.target.checked })
-                  }
-                  style={{ accentColor: "#7c3aed" }}
-                />
-                Show color legend
-              </label>
-              <label
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "8px",
-                  color: "#999",
-                  fontSize: "13px",
-                  cursor: "pointer",
-                }}
-              >
-                <input
-                  type="checkbox"
-                  checked={config.showTooltip}
-                  onChange={(e) =>
-                    setConfig({ ...config, showTooltip: e.target.checked })
-                  }
-                  style={{ accentColor: "#7c3aed" }}
-                />
-                Show hover tooltip
-              </label>
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "10px",
+                    padding: "8px 12px",
+                    borderRadius: "6px",
+                    border: `1px solid ${config.themeColors.join() === p.colors.join() ? "rgba(168,85,247,0.4)" : "rgba(255,255,255,0.06)"}`,
+                    background:
+                      config.themeColors.join() === p.colors.join()
+                        ? "rgba(168,85,247,0.1)"
+                        : "transparent",
+                    cursor: "pointer",
+                    width: "100%",
+                    textAlign: "left",
+                  }}
+                >
+                  <div style={{ display: "flex", gap: "3px" }}>
+                    {p.colors.map((c, i) => (
+                      <div
+                        key={i}
+                        style={{
+                          width: "14px",
+                          height: "14px",
+                          background: c,
+                          borderRadius: "3px",
+                        }}
+                      />
+                    ))}
+                  </div>
+                  <span style={{ color: "#ccc", fontSize: "12px" }}>
+                    {p.name}
+                  </span>
+                </button>
+              ))}
             </div>
           </div>
+        </div>
+
+        {/* Code snippet */}
+        <div style={{ overflow: "hidden" }}>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "8px",
+              padding: "10px 16px",
+              background: "#111",
+              border: "1px solid rgba(255,255,255,0.07)",
+              borderBottom: "none",
+              borderRadius: "8px 8px 0 0",
+            }}
+          >
+            <span
+              style={{ color: "#666", fontSize: "12px", fontWeight: 600 }}
+            >
+              Code
+            </span>
+            <button
+              onClick={copyCode}
+              style={{
+                marginLeft: "auto",
+                display: "flex",
+                alignItems: "center",
+                gap: "5px",
+                background: "transparent",
+                border: "none",
+                color: "#888",
+                fontSize: "12px",
+                cursor: "pointer",
+                padding: "4px 8px",
+              }}
+            >
+              {copied ? <Check size={13} /> : <Copy size={13} />}
+              {copied ? "Copied!" : "Copy code"}
+            </button>
+          </div>
+          <pre
+            style={{
+              padding: "16px",
+              margin: 0,
+              background: "#111",
+              border: "1px solid rgba(255,255,255,0.07)",
+              borderRadius: codeLines.length > 4 ? 0 : "0 0 8px 8px",
+              borderBottom:
+                codeLines.length > 4
+                  ? "none"
+                  : "1px solid rgba(255,255,255,0.07)",
+              overflowX: "auto",
+              fontSize: "13px",
+              lineHeight: 1.7,
+              whiteSpace: "pre",
+              fontFamily: "'SF Mono', 'Fira Code', 'Consolas', monospace",
+              maxWidth: "100%",
+              boxSizing: "border-box",
+            }}
+          >
+            <code
+              dangerouslySetInnerHTML={{
+                __html: highlightCode(showFullCode ? code : truncatedCode),
+              }}
+            />
+            {fadeLine && (
+              <div style={{ opacity: 0.35 }}>
+                <code
+                  dangerouslySetInnerHTML={{
+                    __html: highlightCode(fadeLine),
+                  }}
+                />
+              </div>
+            )}
+          </pre>
+          {codeLines.length > 4 && (
+            <div
+              onClick={() => setShowFullCode((p) => !p)}
+              style={{
+                textAlign: "center",
+                padding: "12px",
+                background: "#111",
+                border: "1px solid rgba(255,255,255,0.07)",
+                borderTop: "none",
+                borderRadius: "0 0 8px 8px",
+                cursor: "pointer",
+              }}
+            >
+              <span
+                style={{
+                  color: "#a78bfa",
+                  fontSize: "13px",
+                  fontWeight: 500,
+                }}
+              >
+                {showFullCode ? "Hide code" : "View full code"}
+              </span>
+            </div>
+          )}
         </div>
       </div>
 
       <style>{`
-        @media (max-width: 900px) {
+        @media (max-width: 1024px) {
           main > div:nth-of-type(2) { grid-template-columns: 1fr !important; }
+        }
+        @media (max-width: 640px) {
+          .controls-row { flex-direction: column !important; }
+        }
+        input[type="range"] {
+          -webkit-appearance: none;
+          appearance: none;
+          height: 6px;
+          background: #222;
+          border-radius: 3px;
+          outline: none;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+          -webkit-appearance: none;
+          appearance: none;
+          width: 16px;
+          height: 16px;
+          border-radius: 50%;
+          background: #a78bfa;
+          cursor: pointer;
+          border: 2px solid #222;
+          transition: transform 0.15s;
+        }
+        input[type="range"]::-webkit-slider-thumb:hover {
+          transform: scale(1.15);
+        }
+        input[type="range"]::-moz-range-track {
+          height: 6px;
+          background: #222;
+          border-radius: 3px;
+        }
+        input[type="range"]::-moz-range-thumb {
+          width: 16px;
+          height: 16px;
+          border-radius: 50%;
+          background: #a78bfa;
+          cursor: pointer;
+          border: 2px solid #222;
         }
       `}</style>
 
@@ -848,10 +1011,9 @@ export default function HomePage() {
             gap: "4px",
           }}
         >
-         
           <div>
             <span style={{ color: "#555", fontSize: "13px" }}>
-              GitCalendarUI - MIT License
+              GitCalendarUI - MIT License{" | "}
             </span>
             <span style={{ color: "#555", fontSize: "12px" }}>
               Created with love by @Manixh02
@@ -888,7 +1050,7 @@ export default function HomePage() {
           </a>
         </div>
       </footer>
-       <Analytics />
+      <Analytics />
     </main>
   );
 }
